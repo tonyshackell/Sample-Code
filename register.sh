@@ -20,8 +20,8 @@ required arguments:
     -u : sudo user for the servers you wish edit the files on. Works best if you have your SSH key installed!
 
 optional arguments:
-	-h : display usage of the script, plus all possible subnet options
-	-o : run the script with only this option to see the possible subnet options
+    -h : display usage of the script, plus all possible subnet options
+    -o : run the script with only this option to see the possible subnet options
 
 example usage:
 ./register.sh -a ashackell-lan -g it_net -m 40:6c:8f:2a:52:5f -u anthony
@@ -137,45 +137,45 @@ SERVERUSER=""
 
 # Parse cli arguments
 while getopts ":a:m:u:g:ho" opt; do
-    case $opt in
-        a)
-            HARDWAREUSER="$OPTARG"
-            ;;
-        m)
-            HARDWAREMAC="$OPTARG"
-            ;;
-        u)
-            SERVERUSER="$OPTARG"
-            ;;
-        g)
-            USERSUBNET="$OPTARG"
-            ;;
-        h)
-            usage
-            show_options
-            exit 1
-            ;;
-        o)
-            show_options
-            exit 1
-            ;;
-        :)
-            echo "Please specified required option arguments. Rerun with \"-h\" for usage."
-            exit 1
-            ;;
-        \?)
-            echo  "Unknown argument provided! Review your call and try again."
-            echo "Run the script with \"-h\" for usage."
-            exit 1
-            ;;
-    esac
+    	case $opt in
+        	a)
+	            	HARDWAREUSER="$OPTARG"
+	            	;;
+	        m)
+	            	HARDWAREMAC="$OPTARG"
+	            	;;
+	        u)
+	            	SERVERUSER="$OPTARG"
+	            	;;
+	        g)
+	            	USERSUBNET="$OPTARG"
+	            	;;
+	        h)
+	            	usage
+	            	show_options
+	            	exit 1
+	            	;;
+	        o)
+	            	show_options
+	            	exit 1
+	            	;;
+	        :)
+	            	echo "Please specified required option arguments. Rerun with \"-h\" for usage."
+	            	exit 1
+	            	;;
+	        \?)
+	            	echo  "Unknown argument provided! Review your call and try again."
+	            	echo "Run the script with \"-h\" for usage."
+	            	exit 1
+	            	;;
+    	esac
 done
 
 # null check!
 if [[ -z "$HARDWAREUSER" || -z "$HARDWAREMAC" || -z "$SERVERUSER" || -z "$USERSUBNET" ]]; then
-    echo """You have not provided the necessary arguments for this script to properly execute. Please review and retry.
-Run the script with \"-h\" for usage."""
-    exit 1
+	echo """You have not provided the necessary arguments for this script to properly execute. Please review and retry.
+	Run the script with \"-h\" for usage."""
+    	exit 1
 fi
 
 # MAC check!
