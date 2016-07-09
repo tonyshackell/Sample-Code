@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# This is a script to automate the user device registration process on the AIMS Ghana network.
+# This is a script to automate the user registration process on the AIMS Ghana network.
 # It works by editing the bind files on the bind server and the dhcpd.conf file on the dhcp server.
 #
-# Author: Anthony Shackell - June 1, 2016
+# Author: Anthony Shackell - May 1, 2016
 
 usage() {
     echo """
@@ -20,8 +20,9 @@ required arguments:
     -u : sudo user for the servers you wish edit the files on. Works best if you have your SSH key installed!
 
 optional arguments:
-	-h : display usage of the script, plus all possible subnet options
-	-o : run the script with only this option to see the possible subnet options
+    -d : a description string to add to the dhcpd.conf entry
+    -h : display usage of the script, plus all possible subnet options
+    -o : run the script with only this option to see the possible subnet options
 
 example usage:
 ./register.sh -a ashackell-lan -g it_net -m 40:6c:8f:2a:52:5f -u anthony
@@ -37,7 +38,6 @@ Possible options:
 srv_net             - Servers and Devices (internal IT)
 it_net              - IT subnet
 students_net        - AIMS Laptops in Lab
-studentswl_net      - AIMS Laptops in Lab (wireless cards)
 studentspriv_net    - Student Personal Devices
 studentsfriends_net - Student Visitors
 tutors_net          - AIMS Laptops for Tutors
@@ -68,7 +68,7 @@ add_reverse_entry() {
 	if [ $? != "0" ]; then
 		echo "Could not find subnet in reverse DNS file. Entry not added."
 		return 1
-	fi
+	fi 
 	PREVLINE=$(ssh -t $1@$2 "sed -n '/; SCRIPT MARKUP $4/{x;p;d;}; x' $3")  &> /dev/null
 	NETNUMS=$(echo $PREVLINE | egrep -o '[0-9]+\.[0-9]+' | tr -d '\r')	
 	SPECIFICID=$(echo ${NETNUMS/./ } | cut -d " " -f1)
@@ -84,22 +84,29 @@ add_forward_entry() {
 		echo "Could not find subnet in forward DNS file. Entry not added."
 		return 1
 	fi
-	PREVLINE=$(ssh -t $1@$2 "sed -n '/; SCRIPT MARKUP $4/{x;p;d;}; x' $3") &> /dev/null
+	NAME=$5
+	TABS=""
+	if [[ $(expr 5 - ${#NAME} / 4) -gt 0 ]]; then
+		TABS=$(yes "\t" | head -n $(expr 4 - ${#NAME} / 4) | tr -d ' ' | tr -d '\n')
+	else
+		TABS='\t'
+	fi
+	PREVLINE=$(ssh -t $1@$2 "sed -n '/; SCRIPT MARKUP $4/{x;p;d;}; x' $3") #&> /dev/null
 	NETNUMS=$(echo $PREVLINE | egrep -o '10.3.[0-9]+\.[0-9]+' | tr -d '\r')
 	SPECIFICID=$(echo $NETNUMS | cut -d "." -f4)
 	((SPECIFICID++))
 	SUPERNET=$(echo $NETNUMS | cut -d "." -f3)
-	NEWENTRY="$5\tIN\t\tA\t\t10.3.$SUPERNET.$SPECIFICID"
-	ssh -t $1@$2 "sed -i '/; SCRIPT MARKUP $4/i $NEWENTRY' $3" &> /dev/null
+	NEWENTRY="${5}${TABS}IN\t\tA\t\t10.3.$SUPERNET.$SPECIFICID"
+	ssh -t $1@$2 "sed -i '/; SCRIPT MARKUP $4/i $NEWENTRY' $3" #&> /dev/null
 }
 
 add_dhcp_entry() {
 	ssh -t $1@$2 "egrep \"# SCRIPT MARKUP $4\" $3" &> /dev/null
 	if [ $? != "0" ]; then
-		echo "Could not find subnet in DHCP file. Entry not added."
+		echo "Could not find subnet in forward DHCP file. Entry not added."
 		return 1
 	fi
-	NEWENTRY="\	host $5 {\n\t\thardware ethernet $6 ;\n\t\tfixed-address $5.aims.edu.gh ;\n\t}"
+	NEWENTRY="\	host $5 { # $7\n\t\thardware ethernet $6 ;\n\t\tfixed-address $5.aims.edu.gh ;\n\t}"
 	ssh -t $1@$2 "sed -i '/# SCRIPT MARKUP $4/i $NEWENTRY' $3"
 }
 
@@ -118,25 +125,25 @@ fi
 
 # Initialize static variables
 	# name of servers
-BINDSERVER="<Insert server here>"
-DHCPSERVER="<Insert server here>"
+BINDSERVER="<insert server here>"
+DHCPSERVER="<insert server here>"
 	# name of files on bind server
-REVERSEFILENAME="<Insert filename here>"
-FORWARDFILENAME="<Insert filename here>"
-DHCPDCONFFILENAME="<Insert filename here>"
+REVERSEFILENAME="<insert filename here>"
+FORWARDFILENAME="<insert filename here>"
 	# path to files on servers
 REVERSEDNSPATH="/etc/bind/zones/$REVERSEFILENAME"
 FORWARDDNSPATH="/etc/bind/zones/$FORWARDFILENAME"
-DHCPDCONFPATH="/etc/dhcp/$DHCPDCONFFILENAME"
+DHCPDCONFPATH="/etc/dhcp/dhcpd.conf"
 
 # Initialize user defined variables to null/false
 HARDWAREUSER=""
 USERSUBNET=""
 HARDWAREMAC=""
 SERVERUSER=""
+DESCRIPTIONSTRING=""
 
 # Parse cli arguments
-while getopts ":a:m:u:g:ho" opt; do
+while getopts ":a:m:u:g:d:ho" opt; do
     case $opt in
         a)
             HARDWAREUSER="$OPTARG"
@@ -149,6 +156,10 @@ while getopts ":a:m:u:g:ho" opt; do
             ;;
         g)
             USERSUBNET="$OPTARG"
+            ;;
+        d)
+            DESCRIPTIONSTRING="$OPTARG"
+            echo $DESCRIPTIONSTRING
             ;;
         h)
             usage
@@ -179,16 +190,17 @@ Run the script with \"-h\" for usage."""
 fi
 
 # MAC check!
-if ! [[ $HARDWAREMAC =~ [0-9a-zA-Z]{2}:[0-9a-zA-Z]{2}:[0-9a-zA-Z]{2}:[0-9a-zA-Z]{2}:[0-9a-zA-Z]{2}:[0-9a-zA-Z]{2} ]]; then
+if ! [[ $HARDWAREMAC =~ ^[0-9a-zA-Z]{2}:[0-9a-zA-Z]{2}:[0-9a-zA-Z]{2}:[0-9a-zA-Z]{2}:[0-9a-zA-Z]{2}:[0-9a-zA-Z]{2}$ ]]; then
 	echo "You have not provided a correctly formatted MAC address. Please review and retry."
 	exit 1
 fi
 
 # print summary of actions and sleep for 10 seconds to allow user to verify
 echo -e """\nRegistering $HARDWAREUSER
-Under group $USERSUBNET
+Under subnet $USERSUBNET
 Using MAC Address $HARDWAREMAC
-Using server user $SERVERUSER\n"""
+Using server user $SERVERUSER
+With description $DESCRIPTIONSTRING\n"""
 echo "Sleeping for 10 seconds. Ctrl-C to exit if parameters are not correct."
 sleep 10
 echo "Running..."
@@ -205,7 +217,7 @@ update_serial $SERVERUSER $BINDSERVER $FORWARDDNSPATH $FORWARDFILENAME
 restart_bind_service $SERVERUSER $BINDSERVER
 
 # add the DHCP entry and restart service
-add_dhcp_entry $SERVERUSER $DHCPSERVER $DHCPDCONFPATH $USERSUBNET $HARDWAREUSER $HARDWAREMAC
+add_dhcp_entry $SERVERUSER $DHCPSERVER $DHCPDCONFPATH $USERSUBNET $HARDWAREUSER $HARDWAREMAC "$DESCRIPTIONSTRING"
 restart_dhcp_service $SERVERUSER $DHCPSERVER
 
 echo -e "\nUser is now registered! Disconnect the device from the WiFi and reconnect for internet access."
