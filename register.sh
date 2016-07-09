@@ -20,14 +20,9 @@ required arguments:
     	-u : sudo user for the servers you wish edit the files on. Works best if you have your SSH key installed!
 
 optional arguments:
-<<<<<<< HEAD
-    -d : a description string to add to the dhcpd.conf entry
-    -h : display usage of the script, plus all possible subnet options
-    -o : run the script with only this option to see the possible subnet options
-=======
-    	-h : display usage of the script, plus all possible subnet options
-    	-o : run the script with only this option to see the possible subnet options
->>>>>>> 6e015baf3e2a99ef8ef91b52abbc21ddfeb4884b
+        -d : a description string to add to the dhcpd.conf entry
+        -h : display usage of the script, plus all possible subnet options
+        -o : run the script with only this option to see the possible subnet options
 
 example usage:
 ./register.sh -a ashackell-lan -g it_net -m 40:6c:8f:2a:52:5f -u anthony
@@ -91,7 +86,7 @@ add_forward_entry() {
 	fi
 	NAME=$5
 	TABS=""
-	if [[ $(expr 5 - ${#NAME} / 4) -gt 0 ]]; then
+	if [[ $(expr 4 - ${#NAME} / 4) -gt 0 ]]; then
 		TABS=$(yes "\t" | head -n $(expr 4 - ${#NAME} / 4) | tr -d ' ' | tr -d '\n')
 	else
 		TABS='\t'
@@ -129,7 +124,6 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Initialize static variables
-<<<<<<< HEAD
 	# name of servers
 BINDSERVER="<insert server here>"
 DHCPSERVER="<insert server here>"
@@ -137,17 +131,6 @@ DHCPSERVER="<insert server here>"
 REVERSEFILENAME="<insert filename here>"
 FORWARDFILENAME="<insert filename here>"
 	# path to files on servers
-=======
-
-# name of servers
-BINDSERVER="<Insert server here>"
-DHCPSERVER="<Insert server here>"
-# name of files on bind server
-REVERSEFILENAME="<Insert filename here>"
-FORWARDFILENAME="<Insert filename here>"
-DHCPDCONFFILENAME="<Insert filename here>"
-# path to files on servers
->>>>>>> 6e015baf3e2a99ef8ef91b52abbc21ddfeb4884b
 REVERSEDNSPATH="/etc/bind/zones/$REVERSEFILENAME"
 FORWARDDNSPATH="/etc/bind/zones/$FORWARDFILENAME"
 DHCPDCONFPATH="/etc/dhcp/dhcpd.conf"
@@ -161,7 +144,6 @@ SERVERUSER=""
 DESCRIPTIONSTRING=""
 
 # Parse cli arguments
-<<<<<<< HEAD
 while getopts ":a:m:u:g:d:ho" opt; do
     case $opt in
         a)
@@ -199,41 +181,6 @@ while getopts ":a:m:u:g:d:ho" opt; do
             exit 1
             ;;
     esac
-=======
-while getopts ":a:m:u:g:ho" opt; do
-    	case $opt in
-        	a)
-	            	HARDWAREUSER="$OPTARG"
-	            	;;
-	        m)
-	            	HARDWAREMAC="$OPTARG"
-	            	;;
-	        u)
-	            	SERVERUSER="$OPTARG"
-	            	;;
-	        g)
-	            	USERSUBNET="$OPTARG"
-	            	;;
-	        h)
-	            	usage
-	            	show_options
-	            	exit 1
-	            	;;
-	        o)
-	            	show_options
-	            	exit 1
-	            	;;
-	        :)
-	            	echo "Please specified required option arguments. Rerun with \"-h\" for usage."
-	            	exit 1
-	            	;;
-	        \?)
-	            	echo  "Unknown argument provided! Review your call and try again."
-	            	echo "Run the script with \"-h\" for usage."
-	            	exit 1
-	            	;;
-    	esac
->>>>>>> 6e015baf3e2a99ef8ef91b52abbc21ddfeb4884b
 done
 
 # null check!
