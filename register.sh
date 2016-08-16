@@ -57,25 +57,32 @@ testlab_net         - Test Lab Devices
 }
 
 update_serial() {
+	# find old serial and increment
 	NEWSERIAL=$(ssh -t $1@$2 "grep Serial $3 | egrep -o '[0-9]+'" | tr -d '\r')
 	((NEWSERIAL++))
 	echo "New $4 serial: $NEWSERIAL"
+	# use sed to replace old serial with new one
 	ssh -t $1@$2 "sed -r -i \"s/[0-9]+\s+; Serial/$NEWSERIAL\	\	; Serial/\" $3" &> /dev/null
 }
 
 add_reverse_entry() {
+	# check that necessary markup is present in file before attempting to continue
 	ssh -t $1@$2 "egrep \"; SCRIPT MARKUP $4\" $3" &> /dev/null
 	if [ $? != "0" ]; then
 		echo "Could not find subnet in reverse DNS file. Entry not added."
 		return 1
-	fi 
-	PREVLINE=$(ssh -t $1@$2 "sed -n '/; SCRIPT MARKUP $4/{x;p;d;}; x' $3")  &> /dev/null
+	fi
+	# sed hackery to get the previous line in a variable
+	PREVLINE=$(ssh -t $1@$2 "sed -n '/; SCRIPT MARKUP $4/{x;p;d;}; x' $3") 
 	NETNUMS=$(echo $PREVLINE | egrep -o '[0-9]+\.[0-9]+' | tr -d '\r')	
+	# get specific host id and increment
 	SPECIFICID=$(echo ${NETNUMS/./ } | cut -d " " -f1)
 	((SPECIFICID++))
+	# get pseudo-subnet for AIMS
 	SUPERNET=$(echo ${NETNUMS/./ } | cut -d " " -f2)
+	# create new entry and add it
 	NEWENTRY="$SPECIFICID.$SUPERNET\t\tIN\tPTR\t$5.aims.edu.gh."
-	ssh -t $1@$2 "sed -i \"/; SCRIPT MARKUP $4/i $NEWENTRY\" $3" #&> /dev/null
+	ssh -t $1@$2 "sed -i \"/; SCRIPT MARKUP $4/i $NEWENTRY\" $3" &> /dev/null
 }
 
 add_forward_entry() {
@@ -85,19 +92,20 @@ add_forward_entry() {
 		return 1
 	fi
 	NAME=$5
+	# dynamically adjust the amount of tabs added to the line in the file. Always ouputs at least one.
 	TABS=""
 	if [[ $(expr 4 - ${#NAME} / 4) -gt 0 ]]; then
 		TABS=$(yes "\t" | head -n $(expr 4 - ${#NAME} / 4) | tr -d ' ' | tr -d '\n')
 	else
 		TABS='\t'
 	fi
-	PREVLINE=$(ssh -t $1@$2 "sed -n '/; SCRIPT MARKUP $4/{x;p;d;}; x' $3") #&> /dev/null
+	PREVLINE=$(ssh -t $1@$2 "sed -n '/; SCRIPT MARKUP $4/{x;p;d;}; x' $3") 
 	NETNUMS=$(echo $PREVLINE | egrep -o '10.3.[0-9]+\.[0-9]+' | tr -d '\r')
 	SPECIFICID=$(echo $NETNUMS | cut -d "." -f4)
 	((SPECIFICID++))
 	SUPERNET=$(echo $NETNUMS | cut -d "." -f3)
 	NEWENTRY="${5}${TABS}IN\t\tA\t\t10.3.$SUPERNET.$SPECIFICID"
-	ssh -t $1@$2 "sed -i '/; SCRIPT MARKUP $4/i $NEWENTRY' $3" #&> /dev/null
+	ssh -t $1@$2 "sed -i '/; SCRIPT MARKUP $4/i $NEWENTRY' $3" &> /dev/null
 }
 
 add_dhcp_entry() {
