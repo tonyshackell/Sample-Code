@@ -180,7 +180,7 @@ while getopts ":a:m:u:g:d:ho" opt; do
             exit 1
             ;;
         :)
-            echo "Please specified required option arguments. Rerun with \"-h\" for usage."
+            echo "Please specify required option arguments. Rerun with \"-h\" for usage."
             exit 1
             ;;
         \?)
