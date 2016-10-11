@@ -21,11 +21,15 @@ V_notes = ['Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'Bb', 'B
 
 correct = 0
 incorrect = 0
+prev = None
 keys_asked = []
 
 while(True):
     # generate random index for above lists
     ind = randint(0, len(root_notes)-1)
+    # ensure that the same progression does not get asked twice in a row
+    while ind == prev:
+        ind = randint(0, len(root_notes)-1)
     # ask user for key
     answer = raw_input('Progression: ' + ii_notes[ind] + 'm - ' + V_notes[ind] + '7\n')
 
@@ -35,14 +39,16 @@ while(True):
         if keys_asked:
             print 'Keys tested: ' + ', '.join(keys_asked)
         quit()
-    # wrong answer
-    elif answer != root_notes[ind]:
+    # wrong answer (checks for upper/lower case answers)
+    elif answer != root_notes[ind] and answer != root_notes[ind].upper() and answer != root_notes[ind].lower():
         print 'Sorry, incorrect. The correct key is ' + root_notes[ind] + '.'
         incorrect += 1
     # right answer!
     else:
         print 'Correct!'
         correct += 1
+
+    prev = ind
 
     # relatively inexpensive operation to keep track of visited keys
     if not root_notes[ind] in keys_asked:
