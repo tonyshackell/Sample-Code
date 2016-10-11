@@ -7,7 +7,7 @@ echo "waiting for the internet gods to smile upon us..."
 ping -o $1 &> /dev/null
 while [[ $? -ne 0 ]]; do
     sleep 1
-    ping -o google.ca &> /dev/null
+    ping -o $1 &> /dev/null
 done
 
 echo "Internet is back!" | wall
