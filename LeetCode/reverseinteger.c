@@ -47,12 +47,13 @@ int reverse(int x) {
       printf("%s: %f\n", "Adding Value", (pow(10,(number_of_digits))) * reversed_array[i]);
     #endif
 
-    ret += (pow(10,(number_of_digits--))) * reversed_array[i++];
+    ret += pow(10, number_of_digits--) * reversed_array[i++];
   }
   if (neg_bit) return ret * -1;
   return ret;
 }
 
 int main() {
+  // simple test case
   printf("%i\n", reverse(-21349));
 }
