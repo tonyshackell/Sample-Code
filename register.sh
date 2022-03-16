@@ -25,7 +25,7 @@ optional arguments:
         -o : run the script with only this option to see the possible subnet options
 
 example usage:
-./register.sh -a ashackell-lan -g it_net -m 40:6c:8f:2a:52:5f -u anthony
+./register.sh -a ashackell-lan -g it_net -m XX:XX:XX:XX:XX:XX -u anthony
     """
 }
 
