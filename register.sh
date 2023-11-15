@@ -14,7 +14,7 @@ Usage:
 ./register.sh ARGS
 
 required arguments:
-    	-a : user to add to the files (e.g. ashackell-wireless)
+    	-a : user to add to the files (e.g. <name>-wireless)
     	-g : the group (subnet) to create the user under. Run this script with -o flag for possible options
     	-m : mac address assigned to the hardware you are registering
     	-u : sudo user for the servers you wish edit the files on. Works best if you have your SSH key installed!
@@ -25,7 +25,7 @@ optional arguments:
         -o : run the script with only this option to see the possible subnet options
 
 example usage:
-./register.sh -a ashackell-lan -g it_net -m XX:XX:XX:XX:XX:XX -u anthony
+./register.sh -a <name>-lan -g it_net -m XX:XX:XX:XX:XX:XX -u anthony
     """
 }
 
@@ -35,24 +35,7 @@ The following are options for the subnet to register the device under. Please sp
 defined here) to avoid causing errors.
 
 Possible options:
-srv_net             - Servers and Devices (internal IT)
-it_net              - IT subnet
-students_net        - AIMS Laptops in Lab
-studentspriv_net    - Student Personal Devices
-studentsfriends_net - Student Visitors
-tutors_net          - AIMS Laptops for Tutors
-tutorspriv_net      - Tutors' Personal Devices
-lecturers_net       - AIMS Laptops assigned to Lecturers
-lecturerspriv_net   - Lecturers' Personal Devices
-staff_net           - AIMS Laptops assigned to staff
-staffpriv_net       - Staff Personal Devices
-visitors_net        - AIMS Laptops assigned to visitors
-visitorspriv_net    - Visitors' Personal Devices
-contractors_net     - AIMS Laptops assigned to contractors
-contractorspriv_net - Contractors Personal Devices
-workshops_net       - AIMS Laptops assigned to Workshop Participants
-workshopspriv_net   - Workshop Participants' Personal Devices
-testlab_net         - Test Lab Devices
+<redacted>
 	"""
 }
 
