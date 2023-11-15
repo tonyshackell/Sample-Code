@@ -31,14 +31,15 @@ mkdir -p input_files
 mkdir -p output_files
 
 # install support tools
-echo Checking/installing Brew...
+echo "Checking/installing Brew..."
 (which brew 1> /dev/null || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)") || INSTALLATION_FAILED=true
-echo Checking/installing Python 3...
+echo "Checking/installing Python 3..."
 (which python3 1> /dev/null || brew install python3) || INSTALLATION_FAILED=true
-echo Checking/installing Git...
+echo "Checking/installing Git..."
 (which git 1> /dev/null || brew install git) || INSTALLATION_FAILED=true
-echo Checking/installing python3 virtualenv...
-(which virtualenv 1> /dev/null || pip3 install virtualenv) || INSTALLATION_FAILED=true
+echo "Checking/installing python3 virtualenv..."
+echo "Note that you may be prompted for your password to install this tool, but it is necessary."
+(which virtualenv 1> /dev/null || sudo pip3 install virtualenv) || INSTALLATION_FAILED=true
 
 if [[ $INSTALLATION_FAILED == true ]]; then
   echo "Failed installing required tooling. Review the above output and try again."
@@ -47,7 +48,8 @@ fi
 
 # clone the git repo
 git clone https://github.com/jeonchangbin49/De-limiter.git delimiter-source || INSTALLATION_FAILED=true
-virtualenv delimiter-python-virtualenv -p python3 || INSTALLATION_FAILED=true
+echo "Creating a virtual environment for with your local python3 install. You may be prompted for your password."
+sudo virtualenv delimiter-python-virtualenv -p python3 || INSTALLATION_FAILED=true
 source "$INSTALL_DIR/Delimiter/delimiter-python-virtualenv/bin/activate" || INSTALLATION_FAILED=true
 pip install -r "delimiter-source/requirements.txt" || INSTALLATION_FAILED=true
 deactivate
