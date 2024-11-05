@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# set -x
+#  set -x
 
 ### install-delimiter.sh
 ### installs the delimiter and supporting tooling and creates a delimit script.
@@ -12,9 +12,9 @@ echo -e "\n
 This script installs:
 - the Delimiter into a folder in $INSTALL_DIR
 - Brew (the OS X package manager)
-- Python 3 
+- Pyenv/Python 3.10
 - Git
-- Python virtualenv to your global python install
+- Python virtualenv to your pyenv 3.10 install
 
 Sleeping for 10 seconds before proceeding. If you don't want to install these things, press ctrl-c to cancel...\n"
 
@@ -33,12 +33,16 @@ mkdir -p output_files
 # install support tools
 echo "Checking/installing Brew..."
 (which brew 1> /dev/null) || (echo "Brew is not installed. Please install using the instructions at https://brew.sh/ and try again." && exit 2)
-echo "Installing Python 3..."
-(brew install python3) || INSTALLATION_FAILED=true
 echo "Checking/installing Git..."
 (which git 1> /dev/null || brew install git) || INSTALLATION_FAILED=true
+echo "Checking/Installing pyenv..."
+(which pyenv 1> /dev/null || (brew install pyenv && echo "$(pyenv init 2>&1)" >> ~/.zshenv)) || INSTALLATION_FAILED=true
+echo "Installing Python 3.10..."
+(pyenv install 3.10 --skip-existing) || INSTALLATION_FAILED=true
+pyenv local 3.10
+
 echo "Checking/installing python3 virtualenv..."
-(which virtualenv 1> /dev/null || pip3 install virtualenv) || INSTALLATION_FAILED=true
+(which virtualenv 1> /dev/null || pyenv exec python3 -m pip install virtualenv) || INSTALLATION_FAILED=true
 
 if [[ $INSTALLATION_FAILED == true ]]; then
   echo "Failed installing required tooling. Review the above output and try again."
@@ -47,9 +51,9 @@ fi
 
 # clone the git repo
 git clone https://github.com/jeonchangbin49/De-limiter.git delimiter-source || INSTALLATION_FAILED=true
-virtualenv delimiter-python-virtualenv -p python3 || INSTALLATION_FAILED=true
+pyenv exec virtualenv delimiter-python-virtualenv -p python3 || INSTALLATION_FAILED=true
 source "$INSTALL_DIR/Delimiter/delimiter-python-virtualenv/bin/activate" || INSTALLATION_FAILED=true
-pip install -r "delimiter-source/requirements.txt" || INSTALLATION_FAILED=true
+pyenv exec pip install -r "delimiter-source/requirements.txt" || INSTALLATION_FAILED=true
 deactivate
 
 cat > ./delimit.sh <<EOF
@@ -108,3 +112,4 @@ else
         Note that if you move this directory, the \"delimit.sh\" script will no longer work, as the installation path
         in the script will need to be updated."
 fi
+# set +x
